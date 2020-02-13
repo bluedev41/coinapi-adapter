@@ -11,29 +11,43 @@ Obtain an API key from [CoinAPI.io](https://www.coinapi.io/pricing).
 
 ```json
 {
-	"time": "2019-07-12T17:54:00.0033625Z",
-	"asset_id_base": "ETH",
-	"asset_id_quote": "USD",
-	"rate": 274.164982165807
+    "time": "2019-07-12T17:54:00.0033625Z",
+    "asset_id_base": "ETH",
+    "asset_id_quote": "USD",
+    "rate": 274.164982165807
 }
 ```
 
 ## Install
 
 ```bash
-npm install
+yarn install
 ```
 
 ## Test
 
 ```bash
-npm test
+yarn test
 ```
 
 ## Create the zip
 
 ```bash
 zip -r cl-coinapi.zip .
+```
+
+## Docker
+
+If you wish to use Docker to run the adapter, you can build the image by running the following command:
+
+```bash
+docker build . -t coinapi-adapter
+```
+
+Then run it with:
+
+```bash
+docker run -p 8080:8080 -e API_KEY='YOUR_API_KEY' -it coinapi-adapter:latest
 ```
 
 ## Install to GCP
