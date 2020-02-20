@@ -4,8 +4,8 @@ Obtain an API key from [CoinAPI.io](https://www.coinapi.io/pricing).
 
 ## Input Params
 
-- `coin`: The coin to query (required)
-- `market`: The currency to convert to (required)
+- `from` or `coin`: The coin to query (required)
+- `to` or `market`: The currency to convert to (required)
 
 ## Output Format
 

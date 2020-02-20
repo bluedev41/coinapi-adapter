@@ -37,8 +37,8 @@ const requestRetry = (options, retries) => {
 }
 
 const createRequest = (input, callback) => {
-  const coin = input.data.coin || 'ETH'
-  const market = input.data.market || 'USD'
+  const coin = input.data.from || input.data.coin || 'ETH'
+  const market = input.data.to || input.data.market || 'USD'
   const url = `https://rest.coinapi.io/v1/exchangerate/${coin}/${market}`
   const options = {
     url: url,
