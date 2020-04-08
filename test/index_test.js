@@ -8,7 +8,7 @@ describe('createRequest', () => {
     const req = {
       id: jobID,
       data: {
-        coin: 'ETH',
+        coin: 'DAI',
         market: 'USD'
       }
     }
@@ -32,15 +32,12 @@ describe('createRequest', () => {
       data: {}
     }
 
-    it('defaults to ETH/USD', (done) => {
+    it('returns an error to the node', (done) => {
       createRequest(req, (statusCode, data) => {
-        assert.equal(statusCode, 200)
+        assert.isAbove(statusCode, 400)
         assert.equal(data.jobRunID, jobID)
-        assert.isNotEmpty(data.data)
-        assert.isNumber(data.data.result)
-        assert.isNumber(data.result)
-        assert.equal(data.data.asset_id_base, 'ETH')
-        assert.equal(data.data.asset_id_quote, 'USD')
+        assert.isNotEmpty(data.error)
+        assert.equal(data.status, 'errored')
         done()
       })
     })

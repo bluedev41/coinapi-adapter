@@ -37,8 +37,8 @@ const requestRetry = (options, retries) => {
 }
 
 const createRequest = (input, callback) => {
-  const coin = input.data.from || input.data.coin || 'ETH'
-  const market = input.data.to || input.data.market || 'USD'
+  const coin = input.data.from || input.data.coin || ''
+  const market = input.data.to || input.data.market || ''
   const url = `https://rest.coinapi.io/v1/exchangerate/${coin}/${market}`
   const options = {
     url: url,
@@ -64,7 +64,7 @@ const createRequest = (input, callback) => {
       callback(error.statusCode, {
         jobRunID: input.id,
         status: 'errored',
-        error,
+        error: error.response.body.error,
         statusCode: error.statusCode
       })
     })
