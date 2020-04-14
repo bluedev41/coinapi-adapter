@@ -56,35 +56,39 @@ const requestRetry = (options, retries) => {
 
 const validateInput = (input) => {
   return new Promise((resolve, reject) => {
+    const validated = {}
     if (typeof input.id === 'undefined') {
       input.id = '1'
     }
+    validated.id = input.id
 
     if (typeof input.data === 'undefined') {
       reject(new ValidationError('No data supplied'))
     }
+    validated.data = {}
 
     const base = input.data.base || input.data.from || input.data.coin
     if (typeof base === 'undefined') {
       reject(new ValidationError('Base parameter required'))
     }
-    input.data.base = base
+    validated.data.base = base
 
     const quote = input.data.quote || input.data.to || input.data.market
     if (typeof quote === 'undefined') {
       reject(new ValidationError('Quote parameter required'))
     }
-    input.data.quote = quote
+    validated.data.quote = quote
 
-    resolve(input)
+    resolve(validated)
   })
 }
 
 const createRequest = (input, callback) => {
   validateInput(input)
-    .then(input => {
-      const coin = input.data.base
-      const market = input.data.quote
+    .then(validated => {
+      const jobRunID = validated.id
+      const coin = validated.data.base
+      const market = validated.data.quote
       const url = `https://rest.coinapi.io/v1/exchangerate/${coin}/${market}`
       const options = {
         url: url,
@@ -101,7 +105,7 @@ const createRequest = (input, callback) => {
           if (Number(result) === 0) throw new ValidationError('Zero result')
           response.body.result = result
           callback(response.statusCode, {
-            jobRunID: input.id,
+            jobRunID,
             data: response.body,
             result,
             statusCode: response.statusCode
@@ -109,7 +113,7 @@ const createRequest = (input, callback) => {
         })
         .catch(error => {
           callback(500, {
-            jobRunID: input.id,
+            jobRunID,
             status: 'errored',
             error,
             statusCode: 500
