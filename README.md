@@ -11,10 +11,16 @@ Obtain an API key from [CoinAPI.io](https://www.coinapi.io/pricing).
 
 ```json
 {
-    "time": "2019-07-12T17:54:00.0033625Z",
-    "asset_id_base": "ETH",
-    "asset_id_quote": "USD",
-    "rate": 274.164982165807
+ "jobRunID": "1",
+ "data": {
+  "time": "2020-04-15T14:24:15.3834439Z",
+  "asset_id_base": "ETH",
+  "asset_id_quote": "USD",
+  "rate": 159.1132487376848,
+  "result": 159.1132487376848
+ },
+ "result": 159.1132487376848,
+ "statusCode": 200
 }
 ```
 
@@ -65,7 +71,7 @@ docker run -p 8080:8080 -e API_KEY='YOUR_API_KEY' -it coinapi-adapter:latest
 - In Lambda Functions, create function
 - On the Create function page:
   - Give the function a name
-  - Use Node.js 8.10 for the runtime
+  - Use Node.js 12.x for the runtime
   - Choose an existing role or create a new one
   - Click Create Function
 - Under Function code, select "Upload a .zip file" from the Code entry type drop-down
