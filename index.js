@@ -3,6 +3,24 @@ const retries = process.env.RETRIES || 3
 const delay = process.env.RETRY_DELAY || 1000
 const timeout = process.env.TIMEOUT || 1000
 
+class ValidationError extends Error {
+  constructor (message) {
+    super(message)
+    this.name = 'ValidationError'
+    this.message = message
+  }
+
+  toJSON () {
+    return {
+      error: {
+        name: this.name,
+        message: this.message,
+        stacktrace: this.stack
+      }
+    }
+  }
+}
+
 const requestRetry = (options, retries) => {
   return new Promise((resolve, reject) => {
     const retry = (options, n) => {
@@ -10,7 +28,7 @@ const requestRetry = (options, retries) => {
         .then(response => {
           if (response.body.error) {
             if (n === 1) {
-              reject(response)
+              reject(response.body)
             } else {
               setTimeout(() => {
                 retries--
@@ -23,7 +41,7 @@ const requestRetry = (options, retries) => {
         })
         .catch(error => {
           if (n === 1) {
-            reject(error)
+            reject(error.message)
           } else {
             setTimeout(() => {
               retries--
@@ -36,36 +54,74 @@ const requestRetry = (options, retries) => {
   })
 }
 
+const validateInput = (input) => {
+  return new Promise((resolve, reject) => {
+    if (typeof input.id === 'undefined') {
+      input.id = '1'
+    }
+
+    if (typeof input.data === 'undefined') {
+      reject(new ValidationError('No data supplied'))
+    }
+
+    const base = input.data.base || input.data.from || input.data.coin
+    if (typeof base === 'undefined') {
+      reject(new ValidationError('Base parameter required'))
+    }
+    input.data.base = base
+
+    const quote = input.data.quote || input.data.to || input.data.market
+    if (typeof quote === 'undefined') {
+      reject(new ValidationError('Quote parameter required'))
+    }
+    input.data.quote = quote
+
+    resolve(input)
+  })
+}
+
 const createRequest = (input, callback) => {
-  const coin = input.data.from || input.data.coin || ''
-  const market = input.data.to || input.data.market || ''
-  const url = `https://rest.coinapi.io/v1/exchangerate/${coin}/${market}`
-  const options = {
-    url: url,
-    qs: {
-      apikey: process.env.API_KEY
-    },
-    json: true,
-    timeout,
-    resolveWithFullResponse: true
-  }
-  requestRetry(options, retries)
-    .then(response => {
-      const result = response.body.rate
-      response.body.result = result
-      callback(response.statusCode, {
-        jobRunID: input.id,
-        data: response.body,
-        result,
-        statusCode: response.statusCode
-      })
+  validateInput(input)
+    .then(input => {
+      const coin = input.data.base
+      const market = input.data.quote
+      const url = `https://rest.coinapi.io/v1/exchangerate/${coin}/${market}`
+      const options = {
+        url: url,
+        qs: {
+          apikey: process.env.API_KEY
+        },
+        json: true,
+        timeout,
+        resolveWithFullResponse: true
+      }
+      requestRetry(options, retries)
+        .then(response => {
+          const result = response.body.rate
+          if (Number(result) === 0) throw new ValidationError('Zero result')
+          response.body.result = result
+          callback(response.statusCode, {
+            jobRunID: input.id,
+            data: response.body,
+            result,
+            statusCode: response.statusCode
+          })
+        })
+        .catch(error => {
+          callback(500, {
+            jobRunID: input.id,
+            status: 'errored',
+            error,
+            statusCode: 500
+          })
+        })
     })
     .catch(error => {
-      callback(error.statusCode, {
+      callback(500, {
         jobRunID: input.id,
         status: 'errored',
-        error: error.response.body.error,
-        statusCode: error.statusCode
+        error: error.message,
+        statusCode: 500
       })
     })
 }
