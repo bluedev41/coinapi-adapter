@@ -6,12 +6,7 @@ const customParams = {
 }
 
 const createRequest = (input, callback) => {
-  let validator
-  try {
-    validator = new Validator(input, customParams)
-  } catch (error) {
-    Requester.errorCallback(input.id, error, callback)
-  }
+  const validator = new Validator(input, customParams, callback)
   const jobRunID = validator.validated.id
   const coin = validator.validated.data.base
   const market = validator.validated.data.quote
@@ -25,10 +20,10 @@ const createRequest = (input, callback) => {
   Requester.requestRetry(options)
     .then(response => {
       response.body.result = Requester.validateResult(response.body, ['rate'])
-      Requester.successCallback(jobRunID, response.statusCode, response.body, callback)
+      callback(response.statusCode, Requester.success(jobRunID, response))
     })
     .catch(error => {
-      Requester.errorCallback(jobRunID, error, callback)
+      callback(500, Requester.errored(jobRunID, error))
     })
 }
 
