@@ -1,6 +1,6 @@
 # Chainlink CoinApi External Adapter
 
-Obtain an API key from [CoinAPI.io](https://www.coinapi.io/pricing).
+**This adapter has moved to our [external adapters monorepo](https://github.com/smartcontractkit/external-adapters-js)!**
 
 ## Input Params
 
